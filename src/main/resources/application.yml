@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    name: Database
+    url: jdbc:mysql://localhost:3306/calendarapp
+    username: root
+    password: rajan123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    jpa:
+      show-sql:true
+
+app:
+  jwtSecret: ThisIsASecretKeyWithAtLeast32CharactersKeyWithAtLeast32CharactersKeyWithAtLeast32Characters
+  jwtExpirationMs: 300000000
+  jwtCookieName: calendarAppToken
+
