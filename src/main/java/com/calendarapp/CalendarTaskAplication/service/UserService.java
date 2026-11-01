@@ -5,6 +5,8 @@ import com.calendarapp.CalendarTaskAplication.model.Task;
 import com.calendarapp.CalendarTaskAplication.model.User;
 import com.calendarapp.CalendarTaskAplication.model.dto.CreateTaskDto;
 import com.calendarapp.CalendarTaskAplication.model.dto.EditTaskDetailsDto;
+import com.calendarapp.CalendarTaskAplication.model.dto.EditUserDetails;
+import com.calendarapp.CalendarTaskAplication.model.dto.UserResponse;
 import com.calendarapp.CalendarTaskAplication.repository.RoleRepository;
 import com.calendarapp.CalendarTaskAplication.repository.TaskRepository;
 import com.calendarapp.CalendarTaskAplication.repository.UserRepository;
@@ -45,7 +47,10 @@ public class UserService {
         this.roleRepository = roleRepository;
         this.jwtUtills = jwtUtills;
     }
-
+    private User getUserByToken(HttpServletRequest request){
+        String username = jwtUtills.getUsernameFromJwtToken(request);
+        return userRepository.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"We can not find the user you are looking for by his username.(Return profile img)"));
+    }
 
     public User registration(String firstname,
                              String lastname,
@@ -83,6 +88,28 @@ public class UserService {
                 );
 
         return userRepository.save(createUser);
+    }
+
+    public UserResponse editUserDetails(HttpServletRequest request,EditUserDetails userDetails) throws IOException {
+        User user = getUserByToken(request);
+        if (userDetails.firstname() != null && !userDetails.firstname().isBlank()){
+            user.setFirstname(userDetails.firstname());
+        }
+        if (userDetails.lastname() != null && !userDetails.lastname().isBlank()){
+            user.setLastname(userDetails.lastname());
+        }
+        if (userDetails.username() != null && !userDetails.username().isBlank()){
+            user.setUsername(userDetails.username());
+        }
+        if (userDetails.profilePicture() != null){
+            String uniqueFileName = UUID.randomUUID() + "_" + userDetails.profilePicture().getOriginalFilename();
+            Path uploadPath = Paths.get(defaultPath);
+            Path imgPath = uploadPath.resolve(uniqueFileName);
+            Files.copy(userDetails.profilePicture().getInputStream(), imgPath, StandardCopyOption.REPLACE_EXISTING);
+            user.setProfilePicture(uniqueFileName);
+        }
+        userRepository.save(user);
+        return new UserResponse(user.getFirstname(),user.getLastname(),user.getUsername(),user.getProfilePicture());
     }
     public String getUserProfileImage(HttpServletRequest request){
         String username = jwtUtills.getUsernameFromJwtToken(request);

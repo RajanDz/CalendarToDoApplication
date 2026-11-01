@@ -5,6 +5,8 @@ import com.calendarapp.CalendarTaskAplication.model.Task;
 import com.calendarapp.CalendarTaskAplication.model.User;
 import com.calendarapp.CalendarTaskAplication.model.dto.CreateTaskDto;
 import com.calendarapp.CalendarTaskAplication.model.dto.EditTaskDetailsDto;
+import com.calendarapp.CalendarTaskAplication.model.dto.EditUserDetails;
+import com.calendarapp.CalendarTaskAplication.model.dto.UserResponse;
 import com.calendarapp.CalendarTaskAplication.security.jwt.JwtUtills;
 import com.calendarapp.CalendarTaskAplication.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -85,5 +88,10 @@ public class UserController {
     public ResponseEntity<Task> editTaskDetails(HttpServletRequest request, @RequestBody EditTaskDetailsDto editTaskDetailsDto){
         Task editDetails = userService.changeTaskDetails(request,editTaskDetailsDto);
         return ResponseEntity.ok().body(editDetails);
+    }
+    @PatchMapping("/editUserDetails")
+    public ResponseEntity<UserResponse> editUserDetails(HttpServletRequest request,@ModelAttribute EditUserDetails userDetails) throws IOException {
+        UserResponse userResponse = userService.editUserDetails(request,userDetails);
+        return ResponseEntity.ok(userResponse);
     }
 }
