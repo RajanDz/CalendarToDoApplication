@@ -4,6 +4,7 @@ package com.calendarapp.CalendarTaskAplication.security;
 import com.calendarapp.CalendarTaskAplication.security.jwt.AuthTokenFilter;
 import com.calendarapp.CalendarTaskAplication.service.CustomUserDetailsService;
 import jakarta.servlet.http.HttpServlet;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,18 +22,24 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
 @Configuration
-public class WebConfig {
+@AllArgsConstructor
+public class WebConfig  implements WebMvcConfigurer {
+
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry){
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:C:/Users/Rajan44/OneDrive/Desktop/calendar-data/");
+    }
 
     private final CustomUserDetailsService userDetailsService;
     private final AuthTokenFilter authTokenFilter;
-    public WebConfig(CustomUserDetailsService userDetailsService, AuthTokenFilter authTokenFilter) {
-        this.userDetailsService = userDetailsService;
-        this.authTokenFilter = authTokenFilter;
-    }
 
     @Bean
     public AuthenticationManager authManager() {
@@ -65,7 +72,7 @@ public class WebConfig {
                     .cors(cors -> cors.configurationSource(corsConfiguration()))
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/auth/**").permitAll().anyRequest().authenticated());
+                            .requestMatchers("/auth/**", "/uploads/**").permitAll().anyRequest().authenticated());
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
             return http.build();
     }

@@ -47,14 +47,17 @@ public class JwtUtills {
     private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
+
+
     public ResponseCookie generateJwtCookie(UserDetails userDetails){
         String jwt = generateToken(userDetails.getUsername());
         return ResponseCookie.from(cookieName,jwt)
                 .path("/")
-                .maxAge(30 * 60)
+                .maxAge(3600)
                 .httpOnly(true)
                 .build();
     }
+
     public String generateToken(String username) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"We can not found user"));
         List<String> rolesName = user.getRoles().stream()
@@ -71,8 +74,8 @@ public class JwtUtills {
 
     public String logout(HttpServletRequest request, HttpServletResponse response){
         Cookie jwtCookie = WebUtils.getCookie(request,cookieName);
-        jwtCookie.setMaxAge(0);
         jwtCookie.setPath("/");
+        jwtCookie.setMaxAge(0);
         response.addCookie(jwtCookie);
         return "Logout successfull";
     }

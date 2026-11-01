@@ -38,7 +38,7 @@ public class UserService {
     private final JwtUtills jwtUtills;
     @Autowired
     private PasswordEncoder passwordEncoder;
-    private String defaultPath = "C:/Users/Rajan44/Desktop/frontend/calendarApp/gallery";
+    private String defaultPath = "C:/Users/Rajan44/OneDrive/Desktop/calendar-data";
     public UserService(UserRepository userRepository, TaskRepository taskRepository, RoleRepository roleRepository, JwtUtills jwtUtills) {
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
