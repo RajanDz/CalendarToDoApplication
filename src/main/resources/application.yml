@@ -13,4 +13,5 @@ app:
   jwtSecret: ThisIsASecretKeyWithAtLeast32CharactersKeyWithAtLeast32CharactersKeyWithAtLeast32Characters
   jwtExpirationMs: 300000000
   jwtCookieName: calendarAppToken
+  defaultPath: C:/Users/Rajan44/OneDrive/Desktop/calendar-data
 

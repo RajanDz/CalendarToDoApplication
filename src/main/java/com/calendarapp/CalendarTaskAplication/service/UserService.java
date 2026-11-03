@@ -13,6 +13,7 @@ import com.calendarapp.CalendarTaskAplication.repository.UserRepository;
 import com.calendarapp.CalendarTaskAplication.security.jwt.JwtUtills;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -38,14 +39,17 @@ public class UserService {
     private final TaskRepository taskRepository;
     private final RoleRepository roleRepository;
     private final JwtUtills jwtUtills;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    private String defaultPath = "C:/Users/Rajan44/OneDrive/Desktop/calendar-data";
-    public UserService(UserRepository userRepository, TaskRepository taskRepository, RoleRepository roleRepository, JwtUtills jwtUtills) {
+    private final PasswordEncoder passwordEncoder;
+    @Value("${app.defaultPath}")
+    private String defaultPath;
+    private static final java.util.regex.Pattern NAME_PATTERN =
+            java.util.regex.Pattern.compile("^[\\p{L} '-]+$");
+    public UserService(UserRepository userRepository, TaskRepository taskRepository, RoleRepository roleRepository, JwtUtills jwtUtills, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.roleRepository = roleRepository;
         this.jwtUtills = jwtUtills;
+        this.passwordEncoder = passwordEncoder;
     }
     private User getUserByToken(HttpServletRequest request){
         String username = jwtUtills.getUsernameFromJwtToken(request);
@@ -93,12 +97,21 @@ public class UserService {
     public UserResponse editUserDetails(HttpServletRequest request,EditUserDetails userDetails) throws IOException {
         User user = getUserByToken(request);
         if (userDetails.firstname() != null && !userDetails.firstname().isBlank()){
+            if (!NAME_PATTERN.matcher(userDetails.firstname()).matches()){
+                throw new IllegalArgumentException("Firstname can only contain letters");
+            }
             user.setFirstname(userDetails.firstname());
         }
         if (userDetails.lastname() != null && !userDetails.lastname().isBlank()){
+            if (!NAME_PATTERN.matcher(userDetails.lastname()).matches()){
+                throw new IllegalArgumentException("Lastname can only contain letters");
+            }
             user.setLastname(userDetails.lastname());
         }
         if (userDetails.username() != null && !userDetails.username().isBlank()){
+            if (userRepository.findByUsername(userDetails.username()).filter(found -> !found.getId().equals(user.getId())).isPresent()){
+               throw new IllegalArgumentException("This username already exist!");
+            }
             user.setUsername(userDetails.username());
         }
         if (userDetails.profilePicture() != null){
@@ -111,6 +124,7 @@ public class UserService {
         userRepository.save(user);
         return new UserResponse(user.getFirstname(),user.getLastname(),user.getUsername(),user.getProfilePicture());
     }
+
     public String getUserProfileImage(HttpServletRequest request){
         String username = jwtUtills.getUsernameFromJwtToken(request);
         User user = userRepository.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,"We can not find the user you are looking for by his username.(Return profile img)"));
@@ -209,8 +223,7 @@ public class UserService {
     }
 
     public Task deleteTask(HttpServletRequest request, int taskId){
-        String username = jwtUtills.getUsernameFromJwtToken(request);
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "We can not find the user by his user(delete task)"));
+        User user = getUserByToken(request);
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "We can not find the task you are looking for"));
         user.getTasks().remove(task);
         userRepository.save(user);
