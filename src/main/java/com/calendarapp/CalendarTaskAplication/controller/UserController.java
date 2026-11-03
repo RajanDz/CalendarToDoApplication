@@ -10,6 +10,7 @@ import com.calendarapp.CalendarTaskAplication.model.dto.UserResponse;
 import com.calendarapp.CalendarTaskAplication.security.jwt.JwtUtills;
 import com.calendarapp.CalendarTaskAplication.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
@@ -90,7 +91,7 @@ public class UserController {
         return ResponseEntity.ok().body(editDetails);
     }
     @PatchMapping("/editUserDetails")
-    public ResponseEntity<UserResponse> editUserDetails(HttpServletRequest request,@ModelAttribute EditUserDetails userDetails) throws IOException {
+    public ResponseEntity<UserResponse> editUserDetails(HttpServletRequest request, @ModelAttribute EditUserDetails userDetails) throws IOException {
         UserResponse userResponse = userService.editUserDetails(request,userDetails);
         return ResponseEntity.ok(userResponse);
     }
